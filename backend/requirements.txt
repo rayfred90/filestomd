@@ -1,9 +1,9 @@
 # Core
-fastapi==0.110.0
-uvicorn[standard]==0.27.1
+fastapi==0.115.11
+uvicorn[standard]==0.26.0
 python-multipart==0.0.9
 sqlmodel==0.0.16
-pydantic==2.6.1
+pydantic==3.12.0
 pydantic-settings==2.2.1
 
 # File Processing
@@ -17,13 +17,12 @@ python-magic==0.4.27
 markdown==3.5.2
 html2text==2020.1.16
 ebooklib==0.18
-pst-extractor==0.9.4
 
 # Image Processing
 Pillow==10.2.0
 
 # Database
-sqlalchemy==2.0.26
+sqlalchemy==2.0.39
 alembic==1.13.1
 psycopg2-binary==2.9.9
 pgvector>=0.2.4
