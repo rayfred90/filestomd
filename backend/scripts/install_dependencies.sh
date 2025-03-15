@@ -11,6 +11,13 @@ sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 sudo apt update
 
+# Install pgvector from source
+sudo apt install -y git build-essential postgresql-server-dev-17
+git clone --branch v0.5.1 https://github.com/pgvector/pgvector.git
+cd pgvector
+make
+sudo make install
+
 # Install system dependencies
 sudo apt install -y \
     python3 \
@@ -25,8 +32,6 @@ sudo apt install -y \
     tesseract-ocr \
     ghostscript \
     postgresql-17 \
-    postgresql-17-pgvector \
-    postgresql-contrib \
     redis-server \
     supervisor \
     nginx \
