@@ -1,0 +1,38 @@
+# Core
+fastapi==0.110.0
+uvicorn[standard]==0.27.1
+python-multipart==0.0.9
+sqlmodel==0.0.16
+pydantic==2.6.1
+pydantic-settings==2.2.1
+
+# File Processing
+unstructured==0.12.3
+python-docx==1.1.0
+PyPDF2==3.0.1
+pdfplumber==0.10.3
+mammoth==1.7.2
+beautifulsoup4==4.12.3
+python-magic==0.4.27
+markdown==3.5.2
+html2text==2020.1.16
+ebooklib==0.18
+pst-extractor==0.9.4
+
+# Image Processing
+Pillow==10.2.0
+
+# Database
+sqlalchemy==2.0.26
+alembic==1.13.1
+psycopg2-binary==2.9.9
+
+# Storage
+minio==7.2.3
+redis==5.0.1
+
+# Utils
+python-jose[cryptography]==3.3.0
+bcrypt==4.1.2
+python-dotenv==1.0.1
+tenacity==8.2.3

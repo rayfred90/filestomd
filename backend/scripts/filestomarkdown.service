@@ -1,0 +1,15 @@
+[Unit]
+Description=FilesToMarkdown FastAPI Backend Service
+After=network.target postgresql.service redis.service minio.service
+
+[Service]
+User=filestomarkdown
+Group=filestomarkdown
+WorkingDirectory=/opt/filestomarkdown/backend
+Environment="PATH=/opt/filestomarkdown/backend/venv/bin"
+ExecStart=/opt/filestomarkdown/backend/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
