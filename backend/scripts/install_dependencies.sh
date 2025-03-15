@@ -24,8 +24,8 @@ sudo apt install -y \
     poppler-utils \
     tesseract-ocr \
     ghostscript \
-    postgresql-15 \
-    postgresql-15-pgvector \
+    postgresql-17 \
+    postgresql-17-pgvector \
     postgresql-contrib \
     redis-server \
     supervisor \
@@ -34,6 +34,7 @@ sudo apt install -y \
 
 # Start PostgreSQL service
 sudo systemctl start postgresql
+sudo systemctl enable postgresql
 
 # Create python virtual environment
 cd "$BACKEND_DIR"
@@ -52,5 +53,9 @@ rm minio.deb
 sudo mkdir -p /opt/filestomarkdown/data/minio
 sudo mkdir -p /opt/filestomarkdown/logs
 
-# Enable pgvector extension
-sudo -u postgres psql -c 'CREATE EXTENSION IF NOT EXISTS vector;'
+# Enable pgvector extension and create database
+sudo -u postgres psql <<EOF
+CREATE DATABASE filestomarkdown;
+\c filestomarkdown
+CREATE EXTENSION IF NOT EXISTS vector;
+EOF
