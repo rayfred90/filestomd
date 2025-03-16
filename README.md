@@ -1,6 +1,6 @@
 # Files to Markdown Converter
 
-Convert various file types to markdown with embedded metadata, designed for accurate chunking and processing.
+Convert various file formats to markdown with embedded metadata, designed for accurate chunking and processing.
 
 ## Features
 
@@ -13,7 +13,6 @@ Convert various file types to markdown with embedded metadata, designed for accu
 - JSON output with structured data
 - Modern web interface with drag-and-drop
 - Fast asynchronous processing
-- Docker-based deployment
 
 ## Tech Stack
 
@@ -26,62 +25,35 @@ Convert various file types to markdown with embedded metadata, designed for accu
   - React Dropzone
 
 - **Backend**:
-  - FastAPI
-  - SQLModel
-  - PostgreSQL with pgvector
+  - FastAPI 0.115.11
+  - Python 3.12
+  - PostgreSQL 17 with pgvector
   - MinIO for file storage
   - Redis for caching
-  - Various file processing libraries
 
 ## Project Structure
 
 ```
-filestomarkdown/
+/opt/filestomarkdown/filestomd/
 ├── frontend/           # Next.js frontend application
+│   ├── app/          # Next.js app directory
+│   ├── components/   # React components
+│   └── lib/         # Utility functions and types
 ├── backend/           # FastAPI backend application
-├── db/               # Database migrations and init scripts
-├── routers/          # API route handlers
-└── docker/           # Docker configuration files
+│   ├── app/          # Application modules
+│   │   ├── core/    # Core functionality
+│   │   ├── models/  # Database models
+│   │   ├── routers/ # API endpoints
+│   │   └── utils/   # Utility functions
+│   └── scripts/     # Installation and setup scripts
+└── db/              # Database migrations and init scripts
 ```
 
-## Setup
+## Installation
 
-1. **Prerequisites**:
-   - Docker and Docker Compose
-   - Node.js 20+ (for local development)
-   - Python 3.11+ (for local development)
-
-2. **Environment Variables**:
-   Create a `.env` file in the root directory:
-   ```env
-   # PostgreSQL
-   POSTGRES_DB=filestomarkdown
-   POSTGRES_USER=admin
-   POSTGRES_PASSWORD=your_password
-
-   # MinIO
-   MINIO_ROOT_USER=minioadmin
-   MINIO_ROOT_PASSWORD=minioadmin
-   ```
-
-3. **Docker Setup**:
-   ```bash
-   # Build and start services
-   docker-compose up --build
-   ```
-
-4. **Local Development Setup**:
-   ```bash
-   # Frontend
-   cd frontend
-   npm install
-   npm run dev
-
-   # Backend
-   cd backend
-   pip install -r requirements.txt
-   uvicorn main:app --reload
-   ```
+For bare metal installation on Ubuntu 24.04:
+1. Install python3-full and other prerequisites
+2. Follow the detailed instructions in [INSTALL.md](INSTALL.md)
 
 ## Usage
 
@@ -144,4 +116,3 @@ Document content with preserved formatting...
 ## License
 
 MIT License - see LICENSE file for details
-# filestomarkdown

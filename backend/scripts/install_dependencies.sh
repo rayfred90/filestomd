@@ -5,24 +5,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 BACKEND_DIR="$PROJECT_ROOT/backend"
 
-# Update package list and add PostgreSQL repository
+# Update package list and add PostgreSQL repository (using new key method)
 sudo apt update
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
 sudo apt update
 
-# Install pgvector from source
-sudo apt install -y git build-essential postgresql-server-dev-17
-git clone --branch v0.5.1 https://github.com/pgvector/pgvector.git
-cd pgvector
-make
-sudo make install
-
-# Install system dependencies
+# Install system dependencies for unstructured and other packages
 sudo apt install -y \
-    python3 \
+    python3-full \
     python3-venv \
-    python3-pip \
     build-essential \
     libpq-dev \
     pkg-config \
@@ -30,12 +22,27 @@ sudo apt install -y \
     ffmpeg \
     poppler-utils \
     tesseract-ocr \
+    tesseract-ocr-all \
     ghostscript \
     postgresql-17 \
+    postgresql-server-dev-17 \
     redis-server \
     supervisor \
     nginx \
-    curl
+    curl \
+    git \
+    libreoffice \
+    pandoc \
+    libmagic-dev
+
+# Install pgvector from source
+cd /tmp
+git clone --branch v0.5.1 https://github.com/pgvector/pgvector.git
+cd pgvector
+make
+sudo make install
+cd ..
+rm -rf pgvector
 
 # Start PostgreSQL service
 sudo systemctl start postgresql
@@ -45,6 +52,9 @@ sudo systemctl enable postgresql
 cd "$BACKEND_DIR"
 python3 -m venv venv
 source venv/bin/activate
+
+# Upgrade pip and install wheel
+pip install --upgrade pip setuptools wheel
 
 # Install Python dependencies
 pip install --no-cache-dir -r requirements.txt
@@ -60,7 +70,24 @@ sudo mkdir -p /opt/filestomarkdown/logs
 
 # Enable pgvector extension and create database
 sudo -u postgres psql <<EOF
-CREATE DATABASE filestomarkdown;
+DO \$\$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'filestomarkdown') THEN
+        CREATE DATABASE filestomarkdown;
+    END IF;
+END
+\$\$;
 \c filestomarkdown
-CREATE EXTENSION IF NOT EXISTS vector;
+DO \$\$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM pg_extension WHERE extname = 'vector'
+    ) THEN
+        CREATE EXTENSION IF NOT EXISTS vector;
+    END IF;
+END
+\$\$;
 EOF
+
+# Restart PostgreSQL to ensure pgvector is properly loaded
+sudo systemctl restart postgresql

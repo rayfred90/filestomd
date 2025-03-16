@@ -1,36 +1,46 @@
 # FilesToMarkdown Installation Guide
 
-This guide will help you set up FilesToMarkdown without Docker.
+This guide will help you set up FilesToMarkdown on a bare metal Ubuntu system.
 
 ## Prerequisites
 
-- Ubuntu/Debian-based system
-- Python 3.11+
+- Ubuntu 24.04 (Noble) or later
+- Python 3.12 (installed with python3-full)
 - Node.js 18+
-- PostgreSQL 16
+- PostgreSQL 17
 - Redis
 - MinIO
 
 ## Installation Steps
 
-1. **Clone the repository and set up environment**
+1. **Prepare the system**
 ```bash
-git clone [repository-url]
+# Install required system packages
+sudo apt update
+sudo apt install -y python3-full nodejs npm
+```
+
+2. **Clone the repository and set up environment**
+```bash
+cd /opt
+sudo mkdir filestomarkdown
+sudo chown $USER:$USER filestomarkdown
 cd filestomarkdown
+git clone [repository-url] filestomd
+cd filestomd
 cp frontend/.env.example frontend/.env  # Create and edit with your settings
 ```
 
-2. **Run the installation script**
+3. **Run the installation script**
 ```bash
 cd backend/scripts
 chmod +x install_dependencies.sh
-./install_dependencies.sh
+sudo ./install_dependencies.sh
 ```
 
-3. **Set up the database**
+4. **Set up the database user**
 ```bash
 sudo -u postgres psql
-CREATE DATABASE filestomarkdown;
 CREATE USER filestomarkdown WITH PASSWORD 'your-secure-password';
 ALTER ROLE filestomarkdown SET client_encoding TO 'utf8';
 ALTER ROLE filestomarkdown SET default_transaction_isolation TO 'read committed';
@@ -39,12 +49,12 @@ GRANT ALL PRIVILEGES ON DATABASE filestomarkdown TO filestomarkdown;
 \q
 
 # Initialize the database
-cd /opt/filestomarkdown/backend
-source venv/bin/activate
+cd /opt/filestomarkdown/filestomd
+source backend/venv/bin/activate
 alembic upgrade head
 ```
 
-4. **Configure services**
+5. **Configure services**
 ```bash
 # Copy service files
 sudo cp backend/scripts/filestomarkdown.service /etc/systemd/system/
@@ -59,20 +69,20 @@ sudo mkdir -p /opt/filestomarkdown/logs
 sudo chown -R filestomarkdown:filestomarkdown /opt/filestomarkdown/logs
 ```
 
-5. **Build and deploy frontend**
+6. **Build and deploy frontend**
 ```bash
 cd frontend
 npm install
 npm run build
 
-# Configure Nginx (example configuration)
+# Configure Nginx
 sudo cp docker/nginx/nginx.conf /etc/nginx/sites-available/filestomarkdown
 sudo ln -s /etc/nginx/sites-available/filestomarkdown /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-6. **Start services**
+7. **Start services**
 ```bash
 # Enable and start services
 sudo systemctl daemon-reload
@@ -87,10 +97,11 @@ sudo supervisorctl update
 sudo supervisorctl start all
 ```
 
-7. **Verify installation**
+8. **Verify installation**
 ```bash
 # Check service status
 sudo systemctl status filestomarkdown
+sudo systemctl status postgresql
 sudo supervisorctl status
 ```
 
@@ -128,18 +139,24 @@ REDIS_PORT=6379
 
 1. **Service won't start**
 - Check logs: `sudo journalctl -u filestomarkdown`
-- Verify permissions: `ls -l /opt/filestomarkdown`
-- Check Python environment: `source /opt/filestomarkdown/backend/venv/bin/activate`
+- Verify permissions: `ls -l /opt/filestomarkdown/filestomd`
+- Check Python environment: `source /opt/filestomarkdown/filestomd/backend/venv/bin/activate`
 
 2. **Database connection issues**
 - Verify PostgreSQL is running: `sudo systemctl status postgresql`
 - Check connection settings in `.env`
 - Verify user permissions: `sudo -u postgres psql -c '\du'`
+- Check pgvector extension: `sudo -u postgres psql -d filestomarkdown -c '\dx'`
 
 3. **MinIO errors**
 - Check MinIO status: `sudo supervisorctl status minio`
 - Verify storage permissions: `ls -l /opt/filestomarkdown/data/minio`
 - Check MinIO logs: `tail -f /opt/filestomarkdown/logs/minio.err.log`
+
+4. **Python virtual environment issues**
+- Ensure python3-full is installed: `sudo apt install python3-full`
+- Check venv creation: `python3 -m venv --help`
+- Verify Python version: `python3 --version`
 
 ## Maintenance
 
@@ -150,7 +167,7 @@ pg_dump -U filestomarkdown filestomarkdown > backup.sql
 
 2. **Update application**
 ```bash
-cd /opt/filestomarkdown
+cd /opt/filestomarkdown/filestomd
 git pull
 cd frontend && npm install && npm run build
 cd ../backend && source venv/bin/activate && pip install -r requirements.txt
